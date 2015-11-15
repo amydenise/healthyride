@@ -9,8 +9,9 @@ Possible Goals/Opportunities for Collaboration:
 -Mapping?  
 -...?  
 
-Current Todo:  
-1.  Separate out date and time into 2 seperate columns that are the appropriate data types   
-2.  Univariate Exploration/Feeling out Distros and Variable Inconsistencies     
+Immediate Next Steps:  
+1.  Separate out date and time into 2 distinct columns that are the appropriate data types   
+2.  Finish Feeling out Variable Inconsistencies/connections
+3.  Univariate Distributions
 
 Contact Amy @ amy.hepner@gmail.com with questions/concerns
