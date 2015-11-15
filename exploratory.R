@@ -4,7 +4,7 @@ stations <- read.csv("~/healthyride/data/HealthyRideStations2015.csv", stringsAs
 
 #NOTE!:  Names in the stations file do not match the consistent names in the data file: 
 #Ex: In the Station Name File "Forbes Ave & Market Sq"  is "Forbes Ave & Market Square" in the data file 
-#Corrected by Hand in Excel
+#Corrected by Hand in Excel, the following is a list of the official stations as used in "HealthyRideRentals_2015_Q3.csv"
 corrected_stations <- read.csv("~/healthyride/data/corrected_names.csv", stringsAsFactors = FALSE)
 corrected_names <- corrected_stations[,"Corrected_Names"]
 
@@ -22,16 +22,16 @@ apply(data, 2, function(x) length(unique(x)))  #unique values per column
 table(data$FromStationId, useNA = "always")
 as.data.frame(subset(data, FromStationId == 1050)[,"FromStationName"])
 as.data.frame(subset(data, FromStationId == 1051)[,"FromStationName"])
-#The additional 3 are: "Healthy Ride Hub" (297), "Transit" (9), and missing (82)  
+#The additional 3 are: "Healthy Ride Hub", "Transit", and missing
 #Healthy Ride Hub & Transit were added to corrected_names
 
 #?2:  Why are there more Station names than ID's?
-#Some user input in ToStationName & FromStationName
+#Answer: Some user input in ToStationName & FromStationName
 sum(is.na(data$FromStationId))  #82
 mismatched_from_rows <- data[-which(data$FromStationName %in% corrected_names),]
 dim(mismatched_from_rows)
 mismatched_from_rows$FromStationId  
-#In FromStationName: All station names not in corrected_names are NA and every NA corresponds to a hand-coded name
+#In FromStationName, all station names not in corrected_names are NA and every NA corresponds to a hand-coded name
 
 sum(is.na(data$ToStationId))  #1356
 mismatched_to_rows <- data[-which(data$ToStationName %in% corrected_names),]
@@ -41,8 +41,9 @@ mismatched_to_rows$ToStationId  #& All station names not in corrected_names are 
 data_to_matched <- data[which(data$ToStationName %in% corrected_names),]
 subset(data_to_matched, is.na(data_to_matched$ToStationId))  #7 have ToStationName in corrected_names but no associated ToStationId
 
-#Conclusion:  A small portion of FromStationId's (.2%) have been miscoded by hand and have FromStationId = NA
-#Many of these could be likely corrected by hand, but since it is such as small number, we proceed by deleting them from
+#Conclusion:  
+#A small portion of FromStationId's (.2%) have been miscoded by hand and have FromStationId = NA as a result.
+#Many of these could be likely be corrected, but since it is such as small number, we proceed by deleting them from
 #the data set, at least for the time being.  
 
 #A larger portion of ToStationIds are NA (3.38%), but most of these (988/1356 ~ 73%) contain ToStationName == "" and therefore
