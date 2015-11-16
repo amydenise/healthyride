@@ -10,8 +10,6 @@ Possible Goals/Opportunities for Collaboration:
 -...?  
 
 Immediate Next Steps:  
-1.  Separate out date and time into 2 distinct columns that are the appropriate data types   
-2.  Finish Feeling out Variable Inconsistencies/connections
-3.  Univariate Distributions
+3.  Univariate Distributions/explorations
 
 Contact Amy @ amy.hepner@gmail.com with questions/concerns
