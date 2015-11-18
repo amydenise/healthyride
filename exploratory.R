@@ -1,5 +1,6 @@
 ##1.  IMPORTING DATA 
-data <- read.csv("~/healthyride/data/HealthyRideRentals_2015_Q3.csv", stringsAsFactors = FALSE)
+data_original <- read.csv("~/healthyride/data/HealthyRideRentals_2015_Q3.csv", stringsAsFactors = FALSE)
+data <- data_original
 stations <- read.csv("~/healthyride/data/HealthyRideStations2015.csv", stringsAsFactors = FALSE)
 
 #NOTE!:  Names in the stations file do not match the consistent names in the data file: 
@@ -54,9 +55,38 @@ subset(subset(data,ToStationName == ""), FromStationName != "Schenley Dr at Sche
 library(lubridate)
 StartTimeP <- mdy_hm(data$StartTime)  #Convert StartTime to Posix
 StopTimeP <- mdy_hm(data$StopTime) #Convert StopTime to Posix
-TripDurationM <- TripDuration/60   #Convert TripDuration to Minutes
+TripDurationM <- round(TripDuration/60, 0)   #Convert TripDuration to Minutes
 
-data <- cbind(data, StartTimeP, StopTimeP, TripDurationM)  #adding columns
-data <- data[complete.cases(data[,c("FromStationId", "ToStationId")]),] #Drop rows with ToStationId | FromStationId = NA
+#created dataframe for post-altered data: datas
+datas <- cbind(data, StartTimeP, StopTimeP, TripDurationM)  #adding columns
+datas <- datas[complete.cases(datas[,c("FromStationId", "ToStationId")]),] #Drop rows with ToStationId | FromStationId = NA
+
+index <- c(1:nrow(datas))    #add index
+datas <- cbind(datas, index)
+write.csv(datas, file = "~/healthyride/data/adjusted_data.csv")  #write to file
 
 ##3.  UNIVARIATE EXPLORATION
+
+##########################Var: TripDurationM
+barplot(table(datas$TripDurationM))
+#need more granularity
+barplot(table(subset(datas, TripDurationM < 300, select = "TripDurationM")))
+#more still
+barplot(table(subset(datas, TripDurationM < 180, select = "TripDurationM")))
+summary(TripDurationM)
+summary(subset(datas, TripDurationM < 180, select = "TripDurationM"))
+
+#binning bigger
+hist(subset(datas, TripDurationM < 180, select = "TripDurationM")[,1], xlab = "TripDurationM")
+#Note: TripDurationM follows an exponential looking distribution
+
+#Description of Ride Duration (minutes) by UserType
+time_intervals <- c(2, 5, 30, 60, 90, 180, 720, max(TripDurationM))
+durationDes(time_intervals)
+
+#Thougts:
+#~5% of rides are less than 2 minutes?  Are these people experiencing trouble?
+#~50% of rides are < 1/2 hour (~1/2 customers, ~1/2 subscribers)
+#An additional ~18% are > 30min, < 60 minutes (5:1 customers to Subscribers)
+#A daily use costs $24.  It's more economical to get a daily pass if a ride last longer than 12 hours (720 mins)
+#Over the summer nearly 500 people did not take advantage of the daily rates when it would have been better for them.  
