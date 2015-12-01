@@ -1,4 +1,5 @@
 ##1.  IMPORTING DATA 
+source("~/healthyride/funs.R")
 data_original <- read.csv("~/healthyride/data/HealthyRideRentals_2015_Q3.csv", stringsAsFactors = FALSE)
 data <- data_original
 stations <- read.csv("~/healthyride/data/HealthyRideStations2015.csv", stringsAsFactors = FALSE)
@@ -8,7 +9,7 @@ stations <- read.csv("~/healthyride/data/HealthyRideStations2015.csv", stringsAs
 #Corrected by Hand in Excel, the following is a list of the official stations as used in "HealthyRideRentals_2015_Q3.csv"
 corrected_stations <- read.csv("~/healthyride/data/corrected_names.csv", stringsAsFactors = FALSE)
 corrected_names <- corrected_stations[,"Corrected_Names"]
-attach(data)
+
 
 ##2.  DATA VALIDATION & TYPE CONVERSION
 dim(data)  #40,083 x 10
@@ -55,17 +56,37 @@ subset(subset(data,ToStationName == ""), FromStationName != "Schenley Dr at Sche
 library(lubridate)
 StartTimeP <- mdy_hm(data$StartTime)  #Convert StartTime to Posix
 StopTimeP <- mdy_hm(data$StopTime) #Convert StopTime to Posix
-TripDurationM <- round(TripDuration/60, 0)   #Convert TripDuration to Minutes
+TripDurationM <- round(data$TripDuration/60, 0)   #Convert TripDuration to Minutes
 
-#created dataframe for post-altered data: datas
-datas <- cbind(data, StartTimeP, StopTimeP, TripDurationM)  #adding columns
-datas <- datas[complete.cases(datas[,c("FromStationId", "ToStationId")]),] #Drop rows with ToStationId | FromStationId = NA
+#created dataframe that removes NAs
+data_no_na <- cbind(data, StartTimeP, StopTimeP, TripDurationM)  #adding columns
+data_na_na <- data_no_na[complete.cases(data_no_na[,c("FromStationId", "ToStationId")]),] #Drop rows with ToStationId | FromStationId = NA
+write.csv(data_no_na, file = "~/healthyride/data/data_no_na.csv")  #write to file
 
-index <- c(1:nrow(datas))    #add index
-datas <- cbind(datas, index)
-write.csv(datas, file = "~/healthyride/data/adjusted_data.csv")  #write to file
+#create dataframe that removes NAs and StationID 1050 & 1051
+data_no_5051 <- subset(data_no_na, FromStationId < 1050 & ToStationId < 1050)  #Removing rows with From or To stations == 1050 or 1051
+write.csv(data_no_5051, file = "~/healthyride/data/datas_no_5051.csv")  #write to file
 
-##3.  UNIVARIATE EXPLORATION
+#Calculate Matrix counting trips start and end (bidirectional)
+mat <- tripMatrix(stations = stations, data = data_no_5051)
+write.csv(mat, file = "~/healthyride/data/mat.csv")  #write to file
+
+#convert to matrix type for calculations
+mat <- as.matrix(mat)
+
+#Some stats about trip counts
+tripCount <- nrow(data_no_5051)
+stationCount <- length(mat)
+percent((sum(diag(mat))/tripCount))  #% of trips with FromStationId == ToStationId: "32.02%"
+sum(mat == 0)  #Count of Pairs with no trips: 699
+percent(sum(mat == 0)/stationCount)  #% of pairs with no trips: "27.96%"
+
+
+
+
+##4.  UNIVARIATE EXPLORATION
+
+#this is broken since it is using "datas" == data_no_na...needs updated/decide which set to use
 
 ##########################Var: TripDurationM
 barplot(table(datas$TripDurationM))
@@ -90,3 +111,5 @@ durationDes(time_intervals)
 #An additional ~18% are > 30min, < 60 minutes (5:1 customers to Subscribers)
 #A daily use costs $24.  It's more economical to get a daily pass if a ride last longer than 12 hours (720 mins)
 #Over the summer nearly 500 people did not take advantage of the daily rates when it would have been better for them.  
+
+

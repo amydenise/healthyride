@@ -1,3 +1,21 @@
+#Trips Matrix
+#Matrix counting trips start and end (bi-directional)
+tripMatrix <- function(stations, data) {
+  #Initatize of matrix of 0s
+  dim = length(stations$StationNum)
+  mat <- as.data.frame(matrix(data = rep(0, 2500),nrow = dim, ncol = dim))
+  rownames(mat) <- stations$StationNum
+  colnames(mat) <- stations$StationNum
+  
+  for (i in 1:nrow(data)){
+    From_ID_char <- as.character(data$FromStationId[i])
+    To_ID_char <- as.character(data$ToStationId[i])
+    mat[To_ID_char, From_ID_char] <- mat[To_ID_char, From_ID_char] + 1
+  }
+  return(mat)
+}
+
+
 #Percentage Formatter
 percent <- function(x, digits = 2, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
