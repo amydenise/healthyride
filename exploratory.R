@@ -106,11 +106,41 @@ percent((sum(diag(mat))/tripCount))  #% of trips with FromStationId == ToStation
 sum(mat == 0)  #Count of Station Pairs with no trips: 699
 percent(sum(mat == 0)/stationCount)  #% of pairs with no trips: "27.96%"  (699/2500)
 
+##4  WHICH TRIPS ARE FOR TRANSPORT VS. LEISURE?  
+
+##4.1 merging google times with original data
+data <- merge(data,travel_times,by=c("FromStationId", "ToStationId"))
+#rename for ease
+library(data.table)
+setnames(data, "TimeInSec", "GoogleTimeInSec")
+
+##4.2  Adding some useful stats
+data$diff = data$TripDuration - data$GoogleTimeInSec  #difference in time in seconds
+data$diffM = round(data$diff/60, 0)  #differences in minutes
+
+#some differences appear to be great and negative (waaay faster than google)
+#These could be erroneous
+#ex: TripId == 11878801 has the person traveling ~5 miles in 54 seconds
+
+#Adding Google time plus 50%
+data$google150 <- data$GoogleTimeInSec * 1.5
+data$google50 <- data$GoogleTimeInSec * .5
 
 
+#Code as 1 if transport (google50 < TripDuration < google150))
+#Code as -1 if error (TripDuration <= google50)
+#Code as 0 if leisure (TripDuration >= google150)
 
 
+data <- within(data, {
+  transport = ifelse(((data$TripDuration > data$google50)&(data$TripDuration < data$google150)), 1, 
+                          ifelse(data$TripDuration <= data$google50, -1, 0))
+})
 
+table(data$transport)
 
+#Assert that all trips with same to and from station id are coded as leisure
+data$transport[data$ToStationId == data$FromStationId] <- 0  
+table(data$transport)
 
-
+write.csv(data, file = "~/healthyride/data/data_transport.csv")  #write to file

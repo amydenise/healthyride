@@ -1,6 +1,9 @@
 #Bit of code for capturing complete cases, naming off
 data_na_na <- data_no_na[complete.cases(data_no_na[,c("FromStationId", "ToStationId")]),] #Drop rows with ToStationId | FromStationId = NA
 
+#exploring
+#distribution of differences in seconds
+barplot(table(data$diffM))
 
 
 ##4.  UNIVARIATE EXPLORATION
