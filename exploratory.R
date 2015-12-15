@@ -3,6 +3,8 @@ source("~/healthyride/funs.R")
 data_original <- read.csv("~/healthyride/data/HealthyRideRentals_2015_Q3.csv", stringsAsFactors = FALSE)
 data <- data_original
 stations <- read.csv("~/healthyride/data/HealthyRideStations2015.csv", stringsAsFactors = FALSE)
+travel_times <- read.csv("~/healthyride/data/transport_times.csv", stringsAsFactors = FALSE)
+colnames(travel_times) <- c("FromStationId", "ToStationId", "TimeInSec")
 
 #NOTE!:  Names in the stations file do not match the consistent names in the data file: 
 #Ex: In the Station Name File "Forbes Ave & Market Sq"  is "Forbes Ave & Market Square" in the data file 
@@ -74,42 +76,23 @@ write.csv(mat, file = "~/healthyride/data/mat.csv")  #write to file
 #convert to matrix type for calculations
 mat <- as.matrix(mat)
 
-#Some stats about trip counts
+#Some exploration about trip counts
 tripCount <- nrow(data_no_5051)
 stationCount <- length(mat)
 percent((sum(diag(mat))/tripCount))  #% of trips with FromStationId == ToStationId: "32.02%"
 sum(mat == 0)  #Count of Pairs with no trips: 699
 percent(sum(mat == 0)/stationCount)  #% of pairs with no trips: "27.96%"
 
+#merging google times with original data
+total <- merge(data_no_5051,travel_times,by=c("FromStationId", "ToStationId"))
 
 
 
-##4.  UNIVARIATE EXPLORATION
 
-#this is broken since it is using "datas" == data_no_na...needs updated/decide which set to use
 
-##########################Var: TripDurationM
-barplot(table(datas$TripDurationM))
-#need more granularity
-barplot(table(subset(datas, TripDurationM < 300, select = "TripDurationM")))
-#more still
-barplot(table(subset(datas, TripDurationM < 180, select = "TripDurationM")))
-summary(TripDurationM)
-summary(subset(datas, TripDurationM < 180, select = "TripDurationM"))
 
-#binning bigger
-hist(subset(datas, TripDurationM < 180, select = "TripDurationM")[,1], xlab = "TripDurationM")
-#Note: TripDurationM follows an exponential looking distribution
 
-#Description of Ride Duration (minutes) by UserType
-time_intervals <- c(2, 5, 30, 60, 90, 180, 720, max(TripDurationM))
-durationDes(time_intervals)
 
-#Thougts:
-#~5% of rides are less than 2 minutes?  Are these people experiencing trouble?
-#~50% of rides are < 1/2 hour (~1/2 customers, ~1/2 subscribers)
-#An additional ~18% are > 30min, < 60 minutes (5:1 customers to Subscribers)
-#A daily use costs $24.  It's more economical to get a daily pass if a ride last longer than 12 hours (720 mins)
-#Over the summer nearly 500 people did not take advantage of the daily rates when it would have been better for them.  
+
 
 
