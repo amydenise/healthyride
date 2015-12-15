@@ -1,3 +1,8 @@
+#Bit of code for capturing complete cases, naming off
+data_na_na <- data_no_na[complete.cases(data_no_na[,c("FromStationId", "ToStationId")]),] #Drop rows with ToStationId | FromStationId = NA
+
+
+
 ##4.  UNIVARIATE EXPLORATION
 
 #this is broken since it is using "datas" == data_no_na...needs updated/decide which set to use
